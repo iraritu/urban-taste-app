@@ -3,956 +3,318 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Urban Taste Attendance - Geofence</title>
-    <meta name="description" content="Mobile Attendance System with GPS Geofencing">
-    <meta name="theme-color" content="#1F4E78">
+    <title>Urban Taste Attendance</title>
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
+        * { margin: 0; padding: 0; box-sizing: border-box; }
         :root {
-            --primary: #1F4E78;
-            --secondary: #4472C4;
-            --success: #70AD47;
-            --danger: #FF0000;
-            --warning: #FFC000;
-            --light: #F2F2F2;
-            --dark: #333;
-            --white: #FFFFFF;
+            --primary: #1F4E78; --secondary: #4472C4; --success: #70AD47;
+            --danger: #FF0000; --warning: #FFC000; --light: #F2F2F2;
         }
-
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: var(--light);
-            color: var(--dark);
-            overflow-x: hidden;
-        }
-
-        .container {
-            max-width: 100%;
-            background: var(--white);
-            min-height: 100vh;
-            display: flex;
-            flex-direction: column;
-        }
-
-        header {
-            background: var(--primary);
-            color: var(--white);
-            padding: 20px;
-            text-align: center;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.2);
-            position: relative;
-        }
-
-        header h1 {
-            margin: 0;
-            font-size: 24px;
-            margin-bottom: 5px;
-        }
-
-        header .location-status {
-            font-size: 12px;
-            opacity: 0.9;
-        }
-
-        .settings-btn {
-            position: absolute;
-            top: 15px;
-            right: 15px;
-            background: var(--secondary);
-            border: none;
-            color: var(--white);
-            width: 40px;
-            height: 40px;
-            border-radius: 50%;
-            cursor: pointer;
-            font-size: 20px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
-        }
-
-        .settings-btn:hover {
-            background: #1a3a5c;
-        }
-
-        .tabs {
-            display: flex;
-            background: #f5f5f5;
-            border-bottom: 2px solid var(--primary);
-            overflow-x: auto;
-        }
-
-        .tab-btn {
-            flex: 1;
-            padding: 15px;
-            background: transparent;
-            border: none;
-            cursor: pointer;
-            font-size: 14px;
-            font-weight: 600;
-            color: var(--dark);
-            border-bottom: 3px solid transparent;
-            transition: all 0.3s;
-            min-width: 100px;
-            text-align: center;
-        }
-
-        .tab-btn:hover {
-            background: rgba(31, 78, 120, 0.1);
-        }
-
-        .tab-btn.active {
-            background: var(--primary);
-            color: var(--white);
-            border-bottom-color: var(--warning);
-        }
-
-        .tab-content {
-            display: none;
-            padding: 20px;
-            flex: 1;
-        }
-
-        .tab-content.active {
-            display: block;
-        }
-
-        .form-group {
-            margin-bottom: 20px;
-        }
-
-        label {
-            display: block;
-            margin-bottom: 8px;
-            font-weight: 600;
-            color: var(--primary);
-        }
-
-        input, select {
-            width: 100%;
-            padding: 12px;
-            border: 1px solid #ddd;
-            border-radius: 5px;
-            font-size: 16px;
-            font-family: inherit;
-        }
-
-        input:focus, select:focus {
-            outline: none;
-            border-color: var(--secondary);
-            box-shadow: 0 0 5px rgba(68, 114, 196, 0.3);
-        }
-
-        .btn {
-            background: var(--secondary);
-            color: var(--white);
-            padding: 15px 30px;
-            border: none;
-            border-radius: 5px;
-            font-size: 16px;
-            font-weight: 600;
-            cursor: pointer;
-            width: 100%;
-            transition: all 0.3s;
-            margin-top: 10px;
-        }
-
-        .btn:hover:not(:disabled) {
-            background: #355ba0;
-            transform: translateY(-2px);
-            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
-        }
-
-        .btn:disabled {
-            background: #ccc;
-            cursor: not-allowed;
-            opacity: 0.6;
-        }
-
-        .btn-danger {
-            background: var(--danger);
-        }
-
-        .btn-danger:hover:not(:disabled) {
-            background: #cc0000;
-        }
-
-        .btn-success {
-            background: var(--success);
-        }
-
-        .btn-success:hover:not(:disabled) {
-            background: #5a8a3a;
-        }
-
-        .alert {
-            padding: 15px;
-            border-radius: 5px;
-            margin-bottom: 20px;
-            display: none;
-        }
-
-        .alert.show {
-            display: block;
-        }
-
-        .alert-success {
-            background: #d4edda;
-            color: #155724;
-            border: 1px solid #c3e6cb;
-        }
-
-        .alert-danger {
-            background: #f8d7da;
-            color: #721c24;
-            border: 1px solid #f5c6cb;
-        }
-
-        .alert-warning {
-            background: #fff3cd;
-            color: #856404;
-            border: 1px solid #ffeaa7;
-        }
-
-        .alert-info {
-            background: #d1ecf1;
-            color: #0c5460;
-            border: 1px solid #bee5eb;
-        }
-
-        .status-badge {
-            display: inline-block;
-            padding: 5px 12px;
-            border-radius: 20px;
-            font-size: 12px;
-            font-weight: 600;
-            margin-top: 5px;
-        }
-
-        .status-success {
-            background: #d4edda;
-            color: #155724;
-        }
-
-        .status-danger {
-            background: #f8d7da;
-            color: #721c24;
-        }
-
-        .status-warning {
-            background: #fff3cd;
-            color: #856404;
-        }
-
-        .location-info {
-            background: var(--light);
-            padding: 15px;
-            border-radius: 5px;
-            margin-bottom: 20px;
-            font-size: 14px;
-        }
-
-        .location-info p {
-            margin: 5px 0;
-        }
-
-        .geofence-status {
-            margin-top: 10px;
-            padding: 10px;
-            border-radius: 5px;
-            text-align: center;
-            font-weight: 600;
-        }
-
-        .geofence-ok {
-            background: #d4edda;
-            color: #155724;
-            border: 1px solid #c3e6cb;
-        }
-
-        .geofence-outside {
-            background: #f8d7da;
-            color: #721c24;
-            border: 1px solid #f5c6cb;
-        }
-
-        .attendance-table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-top: 15px;
-        }
-
-        .attendance-table th, .attendance-table td {
-            padding: 10px;
-            text-align: left;
-            border-bottom: 1px solid #ddd;
-            font-size: 14px;
-        }
-
-        .attendance-table th {
-            background: var(--primary);
-            color: var(--white);
-            font-weight: 600;
-        }
-
-        .attendance-table tr:hover {
-            background: var(--light);
-        }
-
-        .modal {
-            display: none;
-            position: fixed;
-            z-index: 1000;
-            left: 0;
-            top: 0;
-            width: 100%;
-            height: 100%;
-            background-color: rgba(0,0,0,0.5);
-            animation: fadeIn 0.3s;
-        }
-
-        .modal.show {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-
-        @keyframes fadeIn {
-            from { opacity: 0; }
-            to { opacity: 1; }
-        }
-
-        .modal-content {
-            background-color: var(--white);
-            padding: 30px;
-            border-radius: 8px;
-            max-width: 500px;
-            width: 90%;
-            max-height: 80vh;
-            overflow-y: auto;
-            box-shadow: 0 8px 32px rgba(0,0,0,0.3);
-        }
-
-        .modal-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 20px;
-            border-bottom: 2px solid var(--light);
-            padding-bottom: 15px;
-        }
-
-        .modal-header h2 {
-            margin: 0;
-            color: var(--primary);
-        }
-
-        .close-btn {
-            background: none;
-            border: none;
-            font-size: 24px;
-            cursor: pointer;
-            color: var(--dark);
-            padding: 0;
-        }
-
-        .close-btn:hover {
-            color: var(--danger);
-        }
-
-        .modal-footer {
-            margin-top: 20px;
-            padding-top: 15px;
-            border-top: 2px solid var(--light);
-            display: flex;
-            gap: 10px;
-        }
-
-        .modal-footer .btn {
-            flex: 1;
-        }
-
-        .success-icon {
-            font-size: 48px;
-            text-align: center;
-            margin-bottom: 15px;
-        }
-
-        .time-info {
-            background: #e7f3ff;
-            padding: 12px;
-            border-left: 4px solid var(--secondary);
-            border-radius: 4px;
-            margin-bottom: 15px;
-            font-size: 14px;
-        }
-
-        .emp-id {
-            background: var(--light);
-            padding: 10px;
-            border-radius: 5px;
-            margin-bottom: 10px;
-            font-size: 12px;
-        }
-
-        @media (max-width: 600px) {
-            header h1 {
-                font-size: 18px;
-            }
-
-            .tab-btn {
-                font-size: 12px;
-                padding: 12px 8px;
-            }
-
-            .btn {
-                padding: 12px 20px;
-                font-size: 14px;
-            }
-
-            .modal-content {
-                padding: 20px;
-            }
-
-            .attendance-table th, .attendance-table td {
-                padding: 8px 4px;
-                font-size: 12px;
-            }
-        }
+        body { font-family: 'Segoe UI', sans-serif; background: var(--light); }
+        .container { max-width: 100%; background: white; min-height: 100vh; display: flex; flex-direction: column; }
+        header { background: var(--primary); color: white; padding: 20px; text-align: center; }
+        header h1 { margin: 0; font-size: 24px; }
+        .tabs { display: flex; background: #f5f5f5; border-bottom: 2px solid var(--primary); }
+        .tab-btn { flex: 1; padding: 15px; background: transparent; border: none; cursor: pointer; font-weight: 600; }
+        .tab-btn.active { background: var(--primary); color: white; }
+        .tab-content { display: none; padding: 20px; flex: 1; }
+        .tab-content.active { display: block; }
+        .form-group { margin-bottom: 20px; }
+        label { display: block; margin-bottom: 8px; font-weight: 600; color: var(--primary); }
+        input, select { width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 5px; font-size: 16px; }
+        .btn { background: var(--secondary); color: white; padding: 15px; border: none; border-radius: 5px; font-weight: 600; cursor: pointer; width: 100%; margin-top: 10px; }
+        .btn:disabled { background: #ccc; cursor: not-allowed; opacity: 0.6; }
+        .btn-success { background: var(--success); }
+        .btn-danger { background: var(--danger); }
+        .alert { padding: 15px; border-radius: 5px; margin-bottom: 20px; display: none; }
+        .alert.show { display: block; }
+        .alert-success { background: #d4edda; color: #155724; }
+        .location-info { background: var(--light); padding: 15px; border-radius: 5px; margin-bottom: 20px; }
+        .location-info p { margin: 5px 0; font-size: 14px; }
+        .geofence-status { margin-top: 10px; padding: 10px; border-radius: 5px; text-align: center; font-weight: 600; }
+        .geofence-ok { background: #d4edda; color: #155724; }
+        .geofence-outside { background: #f8d7da; color: #721c24; }
+        .modal { display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); }
+        .modal.show { display: flex; align-items: center; justify-content: center; }
+        .modal-content { background: white; padding: 30px; border-radius: 8px; max-width: 500px; width: 90%; }
+        .modal-header { margin-bottom: 20px; }
+        .modal-header h2 { margin: 0; color: var(--primary); }
+        .modal-footer { margin-top: 20px; display: flex; gap: 10px; }
+        .modal-footer .btn { flex: 1; margin: 0; }
+        .setup-modal-backdrop { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.95); z-index: 999; }
+        .setup-screen { position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background: white; padding: 40px; border-radius: 10px; z-index: 1000; text-align: center; max-width: 400px; }
+        .setup-screen h2 { color: var(--primary); margin-bottom: 20px; }
+        .setup-screen p { margin-bottom: 20px; color: #666; }
+        table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+        th, td { padding: 10px; text-align: left; border-bottom: 1px solid #ddd; }
+        th { background: var(--primary); color: white; }
     </style>
 </head>
 <body>
 <div class="container">
     <header>
         <h1>🍽️ Urban Taste Attendance</h1>
-        <div class="location-status" id="locationStatus">Loading location...</div>
-        <button class="settings-btn" id="settingsBtn" title="Settings">⚙️</button>
+        <div id="locationStatus">Loading...</div>
     </header>
 
     <div class="tabs">
         <button class="tab-btn active" data-tab="checkin">Check-In</button>
         <button class="tab-btn" data-tab="checkout">Check-Out</button>
         <button class="tab-btn" data-tab="attendance">Attendance</button>
-        <button class="tab-btn" data-tab="leave">Leave Request</button>
     </div>
 
-    <!-- CHECK-IN TAB -->
     <div id="checkin" class="tab-content active">
-        <div class="alert alert-info" id="checkInAlert"></div>
+        <div class="alert alert-success" id="checkInAlert"></div>
         <div class="form-group">
-            <label for="empNameCheckin">Employee Name</label>
+            <label>Employee Name</label>
             <select id="empNameCheckin" required>
                 <option value="">Select Employee</option>
             </select>
         </div>
-        <div class="location-info" id="locationInfoCheckin">
-            <p><strong>Current Location:</strong></p>
-            <p>Latitude: <span id="currentLat">-</span></p>
-            <p>Longitude: <span id="currentLng">-</span></p>
-            <p>Distance: <span id="currentDistance">-</span> meters</p>
-            <div class="geofence-status" id="geofenceStatusCheckin">Checking geofence...</div>
+        <div class="location-info">
+            <p><strong>Your Location:</strong></p>
+            <p>Lat: <span id="currentLat">-</span> | Lng: <span id="currentLng">-</span></p>
+            <p>Distance: <span id="currentDistance">-</span> m</p>
+            <div class="geofence-status" id="geofenceStatusCheckin">Checking...</div>
         </div>
-        <div class="time-info">
-            <strong>Check-In Window:</strong> 10:00 AM - 4:00 PM<br>
+        <div class="location-info">
+            <strong>⏰ Check-In Window: 10:00 AM - 4:00 PM</strong><br>
             <strong>Current Time:</strong> <span id="currentTimeCheckin">-</span>
         </div>
         <button class="btn btn-success" id="checkInBtn" disabled>Check In</button>
     </div>
 
-    <!-- CHECK-OUT TAB -->
     <div id="checkout" class="tab-content">
-        <div class="alert alert-info" id="checkOutAlert"></div>
+        <div class="alert alert-success" id="checkOutAlert"></div>
         <div class="form-group">
-            <label for="empNameCheckout">Employee Name</label>
+            <label>Employee Name</label>
             <select id="empNameCheckout" required>
                 <option value="">Select Employee</option>
             </select>
         </div>
-        <div class="location-info" id="locationInfoCheckout">
-            <p><strong>Current Location:</strong></p>
-            <p>Latitude: <span id="currentLat2">-</span></p>
-            <p>Longitude: <span id="currentLng2">-</span></p>
-            <p>Distance: <span id="currentDistance2">-</span> meters</p>
-            <div class="geofence-status" id="geofenceStatusCheckout">Checking geofence...</div>
+        <div class="location-info">
+            <p><strong>Your Location:</strong></p>
+            <p>Lat: <span id="currentLat2">-</span> | Lng: <span id="currentLng2">-</span></p>
+            <p>Distance: <span id="currentDistance2">-</span> m</p>
+            <div class="geofence-status" id="geofenceStatusCheckout">Checking...</div>
         </div>
-        <div class="time-info">
-            <strong>Check-Out Window:</strong> After 9:00 PM<br>
+        <div class="location-info">
+            <strong>⏰ Check-Out Window: After 9:00 PM</strong><br>
             <strong>Current Time:</strong> <span id="currentTimeCheckout">-</span>
         </div>
         <button class="btn btn-danger" id="checkOutBtn" disabled>Check Out</button>
     </div>
 
-    <!-- ATTENDANCE TAB -->
     <div id="attendance" class="tab-content">
-        <div class="form-group">
-            <label for="filterEmp">Filter by Employee</label>
-            <select id="filterEmp">
-                <option value="">All Employees</option>
-            </select>
-        </div>
-        <table class="attendance-table" id="attendanceTable">
-            <thead>
-                <tr>
-                    <th>Employee</th>
-                    <th>Status</th>
-                    <th>Check-In</th>
-                    <th>Check-Out</th>
-                    <th>Date</th>
-                </tr>
-            </thead>
+        <table>
+            <tr>
+                <th>Employee</th>
+                <th>Type</th>
+                <th>Time</th>
+            </tr>
             <tbody id="attendanceBody">
-                <tr><td colspan="5" style="text-align: center;">No attendance records</td></tr>
+                <tr><td colspan="3" style="text-align: center;">No records</td></tr>
             </tbody>
         </table>
     </div>
-
-    <!-- LEAVE TAB -->
-    <div id="leave" class="tab-content">
-        <div class="alert alert-info" id="leaveAlert"></div>
-        <div class="form-group">
-            <label for="empNameLeave">Employee Name</label>
-            <select id="empNameLeave" required>
-                <option value="">Select Employee</option>
-            </select>
-        </div>
-        <div class="form-group">
-            <label for="leaveDate">Date</label>
-            <input type="date" id="leaveDate" required>
-        </div>
-        <div class="form-group">
-            <label for="leaveReason">Reason</label>
-            <select id="leaveReason" required>
-                <option value="">Select Reason</option>
-                <option value="Sick Leave">Sick Leave</option>
-                <option value="Personal Leave">Personal Leave</option>
-                <option value="Emergency">Emergency</option>
-                <option value="Other">Other</option>
-            </select>
-        </div>
-        <button class="btn btn-warning" id="submitLeaveBtn">Submit Leave Request</button>
-    </div>
 </div>
 
-<!-- SETTINGS MODAL -->
-<div id="settingsModal" class="modal">
-    <div class="modal-content">
-        <div class="modal-header">
-            <h2>Settings</h2>
-            <button class="close-btn" id="closeSettingsBtn">&times;</button>
-        </div>
-        <div class="form-group">
-            <label for="appsScriptUrl">Google Apps Script URL</label>
-            <input type="text" id="appsScriptUrl" placeholder="https://script.google.com/...">
-            <small style="color: #666; font-size: 12px; display: block; margin-top: 5px;">
-                Paste your deployed Apps Script URL here for data sync
-            </small>
-        </div>
-        <div class="form-group">
-            <label for="restaurantLat">Restaurant Latitude</label>
-            <input type="number" id="restaurantLat" value="25.3833" step="0.0001">
-        </div>
-        <div class="form-group">
-            <label for="restaurantLng">Restaurant Longitude</label>
-            <input type="number" id="restaurantLng" value="86.4667" step="0.0001">
-        </div>
-        <div class="form-group">
-            <label for="geofenceRadius">Geofence Radius (meters)</label>
-            <input type="number" id="geofenceRadius" value="500" min="100" step="10">
-        </div>
-        <div class="modal-footer">
-            <button class="btn" id="saveSettingsBtn">Save Settings</button>
-        </div>
+<!-- SETUP SCREEN (FIRST TIME ONLY) -->
+<div id="setupBackdrop" class="setup-modal-backdrop" style="display: none;"></div>
+<div id="setupScreen" class="setup-screen" style="display: none;">
+    <h2>🏪 Setup Restaurant Location</h2>
+    <p>This is done ONCE at startup. After this, location is locked.</p>
+    <div class="form-group">
+        <label>Restaurant Latitude</label>
+        <input type="number" id="setupLat" placeholder="25.3833" step="0.00001">
     </div>
+    <div class="form-group">
+        <label>Restaurant Longitude</label>
+        <input type="number" id="setupLng" placeholder="86.4667" step="0.00001">
+    </div>
+    <div class="form-group">
+        <label>Geofence Radius (meters)</label>
+        <input type="number" id="setupRadius" value="500" min="100">
+    </div>
+    <p style="margin: 20px 0; font-size: 12px; color: #999;">
+        💡 Use coordinates from staff phone standing at restaurant
+    </p>
+    <button class="btn btn-success" id="setupBtn" style="margin: 0;">Set Location & Continue</button>
 </div>
 
 <script>
-    // Configuration
-    let config = {
-        appsScriptUrl: localStorage.getItem('appsScriptUrl') || '',
-        restaurantLat: parseFloat(localStorage.getItem('restaurantLat') || '25.3833'),
-        restaurantLng: parseFloat(localStorage.getItem('restaurantLng') || '86.4667'),
-        geofenceRadius: parseFloat(localStorage.getItem('geofenceRadius') || '500')
+const employees = [
+    'MD MOHSIN ALAM', 'BAIJNATH GUPTA', 'SANTOSH KUMAR GUPTA', 'RAMPUKAR CHOUPAL',
+    'SOHAN KUMAR', 'SUNIL', 'NITISH KUMAR', 'SULEKHA', 'SUNITA', 'AKSHAY KUMAR'
+];
+
+let currentLocation = null;
+let attendanceData = JSON.parse(localStorage.getItem('attendanceData') || '[]');
+
+function loadConfig() {
+    return {
+        restaurantLat: localStorage.getItem('restaurantLat') ? parseFloat(localStorage.getItem('restaurantLat')) : null,
+        restaurantLng: localStorage.getItem('restaurantLng') ? parseFloat(localStorage.getItem('restaurantLng')) : null,
+        geofenceRadius: parseInt(localStorage.getItem('geofenceRadius')) || 500
     };
+}
 
-    // Employees list
-    const employees = [
-        'MD MOHSIN ALAM', 'BAIJNATH GUPTA', 'SANTOSH KUMAR GUPTA', 'RAMPUKAR CHOUPAL',
-        'SOHAN KUMAR', 'SUNIL', 'NITISH KUMAR', 'SULEKHA', 'SUNITA', 'AKSHAY KUMAR'
-    ];
+let config = loadConfig();
 
-    // Data storage
-    let currentLocation = null;
-    let attendanceData = JSON.parse(localStorage.getItem('attendanceData')) || [];
-
-    // Initialize
-    document.addEventListener('DOMContentLoaded', () => {
+document.addEventListener('DOMContentLoaded', () => {
+    if (!config.restaurantLat || !config.restaurantLng) {
+        showSetupScreen();
+    } else {
         initializeApp();
-        populateEmployeeDropdowns();
-        setupEventListeners();
-        getLocation();
-        setInterval(updateTime, 1000);
-        setInterval(getLocation, 10000);
+    }
+});
+
+function showSetupScreen() {
+    document.getElementById('setupBackdrop').style.display = 'block';
+    document.getElementById('setupScreen').style.display = 'block';
+    document.getElementById('setupBtn').addEventListener('click', () => {
+        const lat = parseFloat(document.getElementById('setupLat').value);
+        const lng = parseFloat(document.getElementById('setupLng').value);
+        const radius = parseInt(document.getElementById('setupRadius').value);
+
+        if (!lat || !lng) {
+            alert('Please enter valid coordinates');
+            return;
+        }
+
+        localStorage.setItem('restaurantLat', lat.toString());
+        localStorage.setItem('restaurantLng', lng.toString());
+        localStorage.setItem('geofenceRadius', radius.toString());
+
+        config = loadConfig();
+        document.getElementById('setupBackdrop').style.display = 'none';
+        document.getElementById('setupScreen').style.display = 'none';
+        initializeApp();
+    });
+}
+
+function initializeApp() {
+    populateEmployees();
+    setupTabs();
+    setupButtons();
+    getLocation();
+    document.getElementById('leaveDate')?.valueAsDate || (document.getElementById('leaveDate').valueAsDate = new Date());
+    setInterval(getLocation, 10000);
+    setInterval(updateDisplay, 1000);
+}
+
+function populateEmployees() {
+    [document.getElementById('empNameCheckin'), document.getElementById('empNameCheckout')].forEach(select => {
+        employees.forEach(emp => {
+            const opt = document.createElement('option');
+            opt.value = emp;
+            opt.textContent = emp;
+            select.appendChild(opt);
+        });
+    });
+}
+
+function setupTabs() {
+    document.querySelectorAll('.tab-btn').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+            document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+            e.target.classList.add('active');
+            document.getElementById(e.target.getAttribute('data-tab')).classList.add('active');
+        });
+    });
+}
+
+function setupButtons() {
+    document.getElementById('checkInBtn').addEventListener('click', () => {
+        const name = document.getElementById('empNameCheckin').value;
+        if (!name) return;
+        attendanceData.push({ name, type: 'Check-In', time: new Date().toLocaleString(), date: new Date().toDateString() });
+        localStorage.setItem('attendanceData', JSON.stringify(attendanceData));
+        document.getElementById('checkInAlert').textContent = '✅ Check-in recorded!';
+        document.getElementById('checkInAlert').classList.add('show');
+        document.getElementById('empNameCheckin').value = '';
+        setTimeout(() => document.getElementById('checkInAlert').classList.remove('show'), 3000);
+        updateDisplay();
     });
 
-    function initializeApp() {
-        // Load settings modal
-        const settingsBtn = document.getElementById('settingsBtn');
-        const settingsModal = document.getElementById('settingsModal');
-        const closeSettingsBtn = document.getElementById('closeSettingsBtn');
-        const saveSettingsBtn = document.getElementById('saveSettingsBtn');
-
-        settingsBtn.addEventListener('click', () => {
-            document.getElementById('appsScriptUrl').value = config.appsScriptUrl;
-            document.getElementById('restaurantLat').value = config.restaurantLat;
-            document.getElementById('restaurantLng').value = config.restaurantLng;
-            document.getElementById('geofenceRadius').value = config.geofenceRadius;
-            settingsModal.classList.add('show');
-        });
-
-        closeSettingsBtn.addEventListener('click', () => {
-            settingsModal.classList.remove('show');
-        });
-
-        saveSettingsBtn.addEventListener('click', () => {
-            config.appsScriptUrl = document.getElementById('appsScriptUrl').value;
-            config.restaurantLat = parseFloat(document.getElementById('restaurantLat').value);
-            config.restaurantLng = parseFloat(document.getElementById('restaurantLng').value);
-            config.geofenceRadius = parseFloat(document.getElementById('geofenceRadius').value);
-
-            localStorage.setItem('appsScriptUrl', config.appsScriptUrl);
-            localStorage.setItem('restaurantLat', config.restaurantLat);
-            localStorage.setItem('restaurantLng', config.restaurantLng);
-            localStorage.setItem('geofenceRadius', config.geofenceRadius);
-
-            showAlert('Settings saved!', 'success');
-            settingsModal.classList.remove('show');
-        });
-
-        settingsModal.addEventListener('click', (e) => {
-            if (e.target === settingsModal) {
-                settingsModal.classList.remove('show');
-            }
-        });
-    }
-
-    function setupEventListeners() {
-        // Tab navigation
-        document.querySelectorAll('.tab-btn').forEach(btn => {
-            btn.addEventListener('click', (e) => {
-                document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-                document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
-                e.target.classList.add('active');
-                const tab = e.target.getAttribute('data-tab');
-                document.getElementById(tab).classList.add('active');
-            });
-        });
-
-        // Check-In
-        document.getElementById('checkInBtn').addEventListener('click', handleCheckIn);
-
-        // Check-Out
-        document.getElementById('checkOutBtn').addEventListener('click', handleCheckOut);
-
-        // Leave
-        document.getElementById('submitLeaveBtn').addEventListener('click', handleLeaveSubmit);
-
-        // Attendance filter
-        document.getElementById('filterEmp').addEventListener('change', (e) => {
-            displayAttendance(e.target.value);
-        });
-
-        // Set today's date for leave
-        const today = new Date().toISOString().split('T')[0];
-        document.getElementById('leaveDate').value = today;
-    }
-
-    function populateEmployeeDropdowns() {
-        const selects = [
-            document.getElementById('empNameCheckin'),
-            document.getElementById('empNameCheckout'),
-            document.getElementById('empNameLeave'),
-            document.getElementById('filterEmp')
-        ];
-
-        selects.forEach(select => {
-            if (select.id !== 'filterEmp') {
-                employees.forEach(emp => {
-                    const option = document.createElement('option');
-                    option.value = emp;
-                    option.textContent = emp;
-                    select.appendChild(option);
-                });
-            }
-        });
-
-        const filterEmp = document.getElementById('filterEmp');
-        employees.forEach(emp => {
-            const option = document.createElement('option');
-            option.value = emp;
-            option.textContent = emp;
-            filterEmp.appendChild(option);
-        });
-    }
-
-    function getLocation() {
-        if (!navigator.geolocation) {
-            showLocationError('Geolocation not supported');
-            return;
-        }
-
-        navigator.geolocation.getCurrentPosition(
-            (position) => {
-                currentLocation = {
-                    lat: position.coords.latitude,
-                    lng: position.coords.longitude
-                };
-                updateLocationDisplay();
-                checkGeofence();
-            },
-            (error) => {
-                showLocationError(`GPS Error: ${error.message}`);
-            },
-            { enableHighAccuracy: true, timeout: 10000, maximumAge: 5000 }
-        );
-    }
-
-    function updateLocationDisplay() {
-        if (!currentLocation) return;
-
-        const distance = calculateDistance(
-            currentLocation.lat, currentLocation.lng,
-            config.restaurantLat, config.restaurantLng
-        );
-
-        document.getElementById('currentLat').textContent = currentLocation.lat.toFixed(4);
-        document.getElementById('currentLng').textContent = currentLocation.lng.toFixed(4);
-        document.getElementById('currentDistance').textContent = distance.toFixed(0);
-
-        document.getElementById('currentLat2').textContent = currentLocation.lat.toFixed(4);
-        document.getElementById('currentLng2').textContent = currentLocation.lng.toFixed(4);
-        document.getElementById('currentDistance2').textContent = distance.toFixed(0);
-
-        document.getElementById('locationStatus').textContent =
-            `📍 Distance: ${distance.toFixed(0)}m from restaurant`;
-    }
-
-    function checkGeofence() {
-        if (!currentLocation) return;
-
-        const distance = calculateDistance(
-            currentLocation.lat, currentLocation.lng,
-            config.restaurantLat, config.restaurantLng
-        );
-
-        const isInGeofence = distance <= config.geofenceRadius;
-
-        const checkInBtn = document.getElementById('checkInBtn');
-        const checkOutBtn = document.getElementById('checkOutBtn');
-
-        checkInBtn.disabled = !isInGeofence || !isCheckInTime();
-        checkOutBtn.disabled = !isInGeofence || !isCheckOutTime();
-
-        const statusCheckIn = document.getElementById('geofenceStatusCheckin');
-        const statusCheckOut = document.getElementById('geofenceStatusCheckout');
-
-        if (isInGeofence) {
-            statusCheckIn.textContent = '✅ Inside geofence';
-            statusCheckIn.className = 'geofence-status geofence-ok';
-            statusCheckOut.textContent = '✅ Inside geofence';
-            statusCheckOut.className = 'geofence-status geofence-ok';
-        } else {
-            statusCheckIn.textContent = `❌ Outside geofence (${distance.toFixed(0)}m away)`;
-            statusCheckIn.className = 'geofence-status geofence-outside';
-            statusCheckOut.textContent = `❌ Outside geofence (${distance.toFixed(0)}m away)`;
-            statusCheckOut.className = 'geofence-status geofence-outside';
-        }
-    }
-
-    function calculateDistance(lat1, lng1, lat2, lng2) {
-        const R = 6371000; // Earth's radius in meters
-        const dLat = (lat2 - lat1) * Math.PI / 180;
-        const dLng = (lng2 - lng1) * Math.PI / 180;
-        const a = Math.sin(dLat / 2) * Math.sin(dLat / 2) +
-                  Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
-                  Math.sin(dLng / 2) * Math.sin(dLng / 2);
-        const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-        return R * c;
-    }
-
-    function isCheckInTime() {
-        const now = new Date();
-        const hour = now.getHours();
-        return hour >= 10 && hour < 16;
-    }
-
-    function isCheckOutTime() {
-        const now = new Date();
-        const hour = now.getHours();
-        return hour >= 21;
-    }
-
-    function updateTime() {
-        const now = new Date();
-        const timeStr = now.toLocaleTimeString();
-        document.getElementById('currentTimeCheckin').textContent = timeStr;
-        document.getElementById('currentTimeCheckout').textContent = timeStr;
-
-        checkGeofence();
-    }
-
-    function handleCheckIn() {
-        const empName = document.getElementById('empNameCheckin').value;
-        if (!empName) {
-            showAlert('Please select an employee', 'danger', 'checkInAlert');
-            return;
-        }
-
-        const now = new Date();
-        const time = now.toLocaleTimeString();
-        const date = now.toLocaleDateString();
-
-        const record = {
-            empName,
-            status: 'Present',
-            checkIn: time,
-            checkOut: '',
-            date,
-            id: Date.now()
-        };
-
-        attendanceData.push(record);
+    document.getElementById('checkOutBtn').addEventListener('click', () => {
+        const name = document.getElementById('empNameCheckout').value;
+        if (!name) return;
+        attendanceData.push({ name, type: 'Check-Out', time: new Date().toLocaleString(), date: new Date().toDateString() });
         localStorage.setItem('attendanceData', JSON.stringify(attendanceData));
-
-        // Sync to Google Sheets
-        syncToGoogleSheet(record, 'checkin');
-
-        showAlert(`✅ Check-in successful at ${time}`, 'success', 'checkInAlert');
-        document.getElementById('empNameCheckin').value = '';
-    }
-
-    function handleCheckOut() {
-        const empName = document.getElementById('empNameCheckout').value;
-        if (!empName) {
-            showAlert('Please select an employee', 'danger', 'checkOutAlert');
-            return;
-        }
-
-        const now = new Date();
-        const time = now.toLocaleTimeString();
-        const date = now.toLocaleDateString();
-
-        const record = {
-            empName,
-            status: 'Present',
-            checkIn: '',
-            checkOut: time,
-            date,
-            id: Date.now()
-        };
-
-        attendanceData.push(record);
-        localStorage.setItem('attendanceData', JSON.stringify(attendanceData));
-
-        // Sync to Google Sheets
-        syncToGoogleSheet(record, 'checkout');
-
-        showAlert(`✅ Check-out successful at ${time}`, 'success', 'checkOutAlert');
+        document.getElementById('checkOutAlert').textContent = '✅ Check-out recorded!';
+        document.getElementById('checkOutAlert').classList.add('show');
         document.getElementById('empNameCheckout').value = '';
-    }
+        setTimeout(() => document.getElementById('checkOutAlert').classList.remove('show'), 3000);
+        updateDisplay();
+    });
+}
 
-    function handleLeaveSubmit() {
-        const empName = document.getElementById('empNameLeave').value;
-        const date = document.getElementById('leaveDate').value;
-        const reason = document.getElementById('leaveReason').value;
+function getLocation() {
+    if (!navigator.geolocation) return;
+    navigator.geolocation.getCurrentPosition(
+        (pos) => {
+            currentLocation = { lat: pos.coords.latitude, lng: pos.coords.longitude };
+            updateDisplay();
+        },
+        () => { document.getElementById('locationStatus').textContent = '⚠️ Location permission denied'; }
+    );
+}
 
-        if (!empName || !date || !reason) {
-            showAlert('Please fill all fields', 'danger', 'leaveAlert');
-            return;
-        }
+function calculateDistance(lat1, lng1, lat2, lng2) {
+    const R = 6371000;
+    const dLat = (lat2 - lat1) * Math.PI / 180;
+    const dLng = (lng2 - lng1) * Math.PI / 180;
+    const a = Math.sin(dLat/2) * Math.sin(dLat/2) + 
+              Math.cos(lat1*Math.PI/180) * Math.cos(lat2*Math.PI/180) * Math.sin(dLng/2) * Math.sin(dLng/2);
+    return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+}
 
-        const record = {
-            empName,
-            status: 'On Leave',
-            checkIn: '',
-            checkOut: '',
-            date,
-            reason,
-            id: Date.now()
-        };
+function updateDisplay() {
+    if (!currentLocation || !config.restaurantLat) return;
 
-        attendanceData.push(record);
-        localStorage.setItem('attendanceData', JSON.stringify(attendanceData));
+    const distance = calculateDistance(currentLocation.lat, currentLocation.lng, config.restaurantLat, config.restaurantLng);
+    const inGeofence = distance <= config.geofenceRadius;
+    const now = new Date();
+    const hour = now.getHours();
+    const canCheckIn = hour >= 10 && hour < 16;
+    const canCheckOut = hour >= 21;
 
-        // Sync to Google Sheets
-        syncToGoogleSheet(record, 'leave');
+    // Update Check-In display
+    document.getElementById('currentLat').textContent = currentLocation.lat.toFixed(4);
+    document.getElementById('currentLng').textContent = currentLocation.lng.toFixed(4);
+    document.getElementById('currentDistance').textContent = distance.toFixed(0);
+    document.getElementById('geofenceStatusCheckin').textContent = inGeofence ? '✅ Inside geofence' : `❌ Outside (${distance.toFixed(0)}m away)`;
+    document.getElementById('geofenceStatusCheckin').className = 'geofence-status ' + (inGeofence ? 'geofence-ok' : 'geofence-outside');
+    document.getElementById('currentTimeCheckin').textContent = now.toLocaleTimeString();
 
-        showAlert(`✅ Leave request submitted for ${date}`, 'success', 'leaveAlert');
-        document.getElementById('empNameLeave').value = '';
-        document.getElementById('leaveReason').value = '';
-    }
+    // Update Check-Out display
+    document.getElementById('currentLat2').textContent = currentLocation.lat.toFixed(4);
+    document.getElementById('currentLng2').textContent = currentLocation.lng.toFixed(4);
+    document.getElementById('currentDistance2').textContent = distance.toFixed(0);
+    document.getElementById('geofenceStatusCheckout').textContent = inGeofence ? '✅ Inside geofence' : `❌ Outside (${distance.toFixed(0)}m away)`;
+    document.getElementById('geofenceStatusCheckout').className = 'geofence-status ' + (inGeofence ? 'geofence-ok' : 'geofence-outside');
+    document.getElementById('currentTimeCheckout').textContent = now.toLocaleTimeString();
 
-    function displayAttendance(empFilter = '') {
-        const tbody = document.getElementById('attendanceBody');
+    document.getElementById('locationStatus').textContent = `📍 ${distance.toFixed(0)}m from restaurant`;
+    document.getElementById('checkInBtn').disabled = !(inGeofence && canCheckIn);
+    document.getElementById('checkOutBtn').disabled = !(inGeofence && canCheckOut);
 
-        let data = attendanceData;
-        if (empFilter) {
-            data = data.filter(r => r.empName === empFilter);
-        }
-
-        if (data.length === 0) {
-            tbody.innerHTML = '<tr><td colspan="5" style="text-align: center;">No records found</td></tr>';
-            return;
-        }
-
-        tbody.innerHTML = data.map(record => `
+    // Update attendance table
+    const tbody = document.getElementById('attendanceBody');
+    if (attendanceData.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="3" style="text-align: center;">No records</td></tr>';
+    } else {
+        tbody.innerHTML = attendanceData.map(r => `
             <tr>
-                <td>${record.empName}</td>
-                <td><span class="status-badge ${record.status === 'Present' ? 'status-success' : 'status-warning'}">${record.status}</span></td>
-                <td>${record.checkIn || '-'}</td>
-                <td>${record.checkOut || '-'}</td>
-                <td>${record.date}</td>
+                <td>${r.name}</td>
+                <td>${r.type}</td>
+                <td style="font-size: 12px;">${r.time}</td>
             </tr>
         `).join('');
     }
-
-    function syncToGoogleSheet(record, action) {
-        if (!config.appsScriptUrl) {
-            return;
-        }
-
-        const payload = {
-            empName: record.empName,
-            action,
-            time: record.checkIn || record.checkOut,
-            date: record.date,
-            reason: record.reason
-        };
-
-        fetch(config.appsScriptUrl, {
-            method: 'POST',
-            body: JSON.stringify(payload)
-        })
-        .catch(err => console.log('Offline - data saved locally'));
-    }
-
-    function showAlert(message, type = 'info', elementId = null) {
-        if (elementId) {
-            const alert = document.getElementById(elementId);
-            alert.textContent = message;
-            alert.className = `alert show alert-${type}`;
-            setTimeout(() => alert.classList.remove('show'), 5000);
-        }
-    }
-
-    function showLocationError(message) {
-        document.getElementById('locationStatus').textContent = `⚠️ ${message}`;
-    }
+}
 </script>
 </body>
 </html>
